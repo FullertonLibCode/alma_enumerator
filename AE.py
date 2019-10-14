@@ -61,7 +61,15 @@ def get_item_info(base_url, mms_id, holdings_id, api_key):
     # Call get_info_from_description() function to parse the description
     # and return a dictionary with
     for d in descriptions:
-        item_info.append(get_info_from_description(d))
+        inf = get_info_from_description(d)
+        item_info.append(inf)
+        #DCP add cross check file
+        with open('crosscheck.txt','a', encoding='utf-8') as fh2:
+            fh2.write('{}\n'.format(mms_id))
+            fh2.write('{}\n'.format(holdings_id))
+            fh2.write('{}\n'.format(d))
+            fh2.write('{}\n'.format('='*20))
+            fh2.write('{}\n\n\n\n'.format(inf))
 
     # Add the item ID to each item
     for i in range(len(item_ids)):
@@ -141,6 +149,14 @@ def get_info_from_description(item):
     # month or season words.
     to_remove = []
     bad_ends_begins = ('-', '%', '/')
+
+    #DCP
+    #detect 3 part pattern pt. 2 v. 1 no. 40-45
+    part_vol_nop = re.compile(r'pt\.?\s?\d+\s?\[?v\.\s?\d+\]?\s?no\.?\s?(\d+-?\d+,?\s?)+')
+    if part_vol_nop.match(item):
+        print('match found')
+        print(item)
+
     # Check each field in info
     for i in info:
         # Scrub '.(),:' from text for better matching
@@ -425,9 +441,11 @@ def fetch(mms_id, output_file, error_file, api_key, base_url):
         with open(output_file, 'a', encoding='utf-8') as fh:
             fh.write('{}\n'.format(h))
 
+
         item_info = get_item_info(base_url, mms_id, h, api_key)
         write_header_to_csv(output_file, item_info)
         output_to_csv(output_file, error_file, item_info)
+
 
 
   ##################################           
